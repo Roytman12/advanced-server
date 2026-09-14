@@ -9,7 +9,6 @@ except Exception as e:
     my_sock.close()
     exit(f"Connection Failed - try again {str(e)}")
 
-
 while True:
     msg = input("Enter msg to send or q to finish")
     if msg.lower() == "q":
