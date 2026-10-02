@@ -3,6 +3,8 @@ import threading
 import os
 import shutil
 
+# Git repo: https://github.com/Roytman12/Image-Client
+
 def recv_image_data(client_socket, file_name, file_data_len):
     """
     receive the image data and save the image
