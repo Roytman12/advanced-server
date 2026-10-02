@@ -1,26 +1,44 @@
 import socket
+import os
 
-my_sock = socket.socket()
-# Connect to server
+my_soc = socket.socket()
 try:
-    my_sock.connect(("127.0.0.1", 1450))
-# if it didn't work, close the socket and end the program.
+    my_soc.connect(("127.0.0.1", 1450))
 except Exception as e:
-    my_sock.close()
-    exit(f"Connection Failed - try again {str(e)}")
+    print(f"{str(e)} - server is down - try again later")
+    my_soc.close()
+    exit()
 
 while True:
-    msg = input("Enter msg to send or q to finish")
-    if msg.lower() == "q":
+    file_path = input("enter image file path or q to end ")
+    if file_path.lower() == "q":
         break
+    if file_path.split(".")[-1] not in ["jpg","png","jpeg","bmp"]:
+        print("not a valid image file - try again")
+        continue
+    if not os.path.isfile(file_path):
+        print("image file not exist - try again")
+        continue
+
+    # the image file is exist
+    file_name = file_path.split("\\")[-1]
+    file_name_len = str(len(file_name)).zfill(2)
+    print(f"file name = {file_name}")
+    # open and read the file as binary data
+    with open(file_path, "rb") as f:
+        file_data = f.read()
+    file_data_len = str(len(file_data)).zfill(6)
 
     try:
-        my_sock.send(msg.encode())
-        data = my_sock.recv(1024).decode()
-        print(f"server sent - {data}")
+        my_soc.send(file_name_len.encode())
+        my_soc.send(file_name.encode())
+        my_soc.send(file_data_len.encode())
+        my_soc.send(file_data)
+        print("the image file successfully send to the server")
     except Exception as e:
-        print(f"error in receive or sending data {str(e)}")
+        print(f"{str(e)} - problem send / receive data - try again later")
         break
 
-my_sock.close()
-print("Bye Bye")
+my_soc.close()
+print("bye bye")
+
