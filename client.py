@@ -24,6 +24,8 @@ def recv_image_data(client_socket, file_name, file_data_len):
     with open (file_name, "wb") as f:
         f.write(data)
 
+# Git repo: https://github.com/Roytman12/advanced-server
+
 my_sock = socket.socket()
 # Connect to server
 try:
