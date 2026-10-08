@@ -24,6 +24,84 @@ def recv_image_data(client_socket, file_name, file_data_len):
     with open (file_name, "wb") as f:
         f.write(data)
 
+def screenshot(my_sock, msg):
+    my_sock.send(msg.encode())
+    # trying to receive the image
+    file_name_len = int(my_sock.recv(2).decode())
+    file_name = my_sock.recv(file_name_len).decode()
+    file_data_len = int(my_sock.recv(6).decode())
+    recv_image_data(my_sock, file_name, file_data_len)
+    print("Image Transferred successfully")
+
+    # open the image
+    im = Image.open('screen.jpg')
+    im.show()
+
+def copy(my_sock, msg):
+    my_sock.send(msg.encode())
+    text = input("Enter Text to Copy:")
+    str_len = str(len(text)).zfill(2)
+    my_sock.send(str_len.encode())
+    my_sock.send(text.encode())
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+def paste(my_sock, msg):
+    my_sock.send(msg.encode())
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+def open_program(my_sock, msg):
+    my_sock.send(msg.encode())
+    prog = input("enter a program the sever needs to open:")
+    prog_len = str(len(prog)).zfill(1)
+    my_sock.send(prog_len.encode())
+    my_sock.send(prog.encode())
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+def show_folder(my_sock, msg):
+    my_sock.send(msg.encode())
+    folder_path = input("Enter folder path:")
+    folder_path_len = str(len(folder_path)).zfill(2)
+    my_sock.send(folder_path_len.encode())
+    my_sock.send(folder_path.encode())
+
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+def delete(my_sock, msg):
+    my_sock.send(msg.encode())
+    file_path = input("Enter file path:")
+    file_path_len = str(len(file_path)).zfill(2)
+    my_sock.send(file_path_len.encode())
+    my_sock.send(file_path.encode())
+
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+def copy_file(my_sock, msg):
+    my_sock.send(msg.encode())
+    copy_path = input("Enter file path to copy:")
+    copy_path_len = str(len(copy_path)).zfill(2)
+    my_sock.send(copy_path_len.encode())
+    my_sock.send(copy_path.encode())
+
+    paste_path = input("Enter file path to paste:")
+    paste_path_len = str(len(copy_path)).zfill(2)
+    my_sock.send(paste_path_len.encode())
+    my_sock.send(paste_path.encode())
+
+    reqLen = my_sock.recv(2).decode()
+    data = my_sock.recv(int(reqLen)).decode()
+    print(f"server sent - {data}")
+
+
 # Git repo: https://github.com/Roytman12/advanced-server
 
 my_sock = socket.socket()
@@ -36,93 +114,27 @@ except Exception as e:
     exit(f"Connection Failed - try again {str(e)}")
 
 while True:
-    msg = input("Enter msg to send or q to finish")
-    if msg.lower() == "q":
+    msg = input("Enter msg to send or exit to finish")
+    if msg.lower() == "exit":
         break
-    if msg.lower() == "screenshot":
-            try:
-                my_sock.send(msg.encode())
-                # trying to receive the image
-                file_name_len = int(my_sock.recv(6).decode())
-                file_name = my_sock.recv(file_name_len).decode()
-                file_data_len = int(my_sock.recv(6).decode())
-                recv_image_data(my_sock, file_name, file_data_len)
-                print("Image Transferred successfully")
-
-                # open the image
-                im = Image.open('screen.jpg')
-                im.show()
-            except Exception as e:
-                print(f"error due to {str(e)}")
-                break
-    elif msg.lower() == "copy":
-        try:
-            my_sock.send(msg.encode())
-            text = input("Enter Text to Copy:")
-            my_sock.send(text.encode())
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
+    try:
+        if msg.lower() == "screenshot":
+                screenshot(my_sock, msg)
+        elif msg.lower() == "copy":
+                copy(my_sock, msg)
+        elif msg.lower() == "paste":
+                paste(my_sock, msg)
+        elif msg.lower() == "open_program":
+                open_program(my_sock, msg)
+        elif msg.lower() == "show_folder":
+                show_folder(my_sock, msg)
+        elif msg.lower() == "delete":
+                delete(my_sock, msg)
+        elif msg.lower() == "copy_file":
+                copy_file(my_sock, msg)
+        else:
             break
-    elif msg.lower() == "paste":
-        try:
-            my_sock.send(msg.encode())
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
-            break
-    elif msg.lower() == "open_program":
-        try:
-            my_sock.send(msg.encode())
-            prog = input("enter a program the sever needs to open:")
-            my_sock.send(prog.encode())
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
-            break
-    elif msg.lower() == "show_folder":
-        try:
-            my_sock.send(msg.encode())
-            folder_path = input("Enter folder path:")
-            my_sock.send(folder_path.encode())
-
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
-            break
-    elif msg.lower() == "delete":
-        try:
-            my_sock.send(msg.encode())
-            file_path = input("Enter file path:")
-            my_sock.send(folder_path.encode())
-
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
-            break
-    elif msg.lower() == "copy_file":
-        try:
-            my_sock.send(msg.encode())
-            copy_path = input("Enter file path to copy:")
-            my_sock.send(copy_path.encode())
-            paste_path = input("Enter file path to paste:")
-            my_sock.send(paste_path.encode())
-
-            reqLen = my_sock.recv(2).decode()
-            data = my_sock.recv(int(reqLen)).decode()
-            print(f"server sent - {data}")
-        except Exception as e:
-            print(f"error in receive or sending data {str(e)}")
-            break
+    except Exception as e:
+        print(f"error: {str(e)}")
 my_sock.close()
 print("Bye Bye")
