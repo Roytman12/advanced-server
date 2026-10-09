@@ -114,23 +114,31 @@ except Exception as e:
     exit(f"Connection Failed - try again {str(e)}")
 
 while True:
-    msg = input("Enter msg to send or exit to finish")
-    if msg.lower() == "exit":
+    msg = input("""Enter one of the following commands:
+1 = Screenshot
+2 = Copy
+3 = Paste
+4 = Open a Program
+5 = show folder's files
+6 =  delete
+7 = copy file
+8 = exit""")
+    if msg.lower() == "8":
         break
     try:
-        if msg.lower() == "screenshot":
+        if msg == "1":
                 screenshot(my_sock, msg)
-        elif msg.lower() == "copy":
+        elif msg == "2":
                 copy(my_sock, msg)
-        elif msg.lower() == "paste":
+        elif msg == "3":
                 paste(my_sock, msg)
-        elif msg.lower() == "open_program":
+        elif msg == "4":
                 open_program(my_sock, msg)
-        elif msg.lower() == "show_folder":
+        elif msg == "5":
                 show_folder(my_sock, msg)
-        elif msg.lower() == "delete":
+        elif msg == "6":
                 delete(my_sock, msg)
-        elif msg.lower() == "copy_file":
+        elif msg == "7":
                 copy_file(my_sock, msg)
         else:
             break

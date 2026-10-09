@@ -6,7 +6,6 @@ import subprocess
 import os
 
 def screenshot(client_soc):
-    if data == "screenshot":
         im = ImageGrab.grab()
         im.save(r'screen.jpg')
         # open and read the file as binary data
@@ -113,27 +112,27 @@ while True:
             data = client_soc.recv(12).decode()
             if data == "":
                 break
-            elif data == "screenshot":
+            elif data == "1":
                 screenshot(client_soc)
                 print("the image file successfully send to the client")
 
-            elif data == "copy":
+            elif data == "2":
                 copy(client_soc)
                 print("Success copying text")
-            elif data == "paste":
+            elif data == "3":
                 paste(client_soc)
                 print("Pasted Successfully")
-            elif data == "open_program":
+            elif data == "4":
                 open_program(client_soc)
-            elif data == "show_folder":
+            elif data == "5":
                 returnVal = show_folder(client_soc)
                 if returnVal == 1:
                     print("Path doesn't exist - try again")
                     continue
                 print("Success")
-            elif data == "delete":
+            elif data == "6":
                 delete(client_soc)
-            elif data == "copy_file":
+            elif data == "7":
                 copy_file(client_soc)
             else:
                 break
