@@ -24,11 +24,41 @@ def recv_image_data(client_socket, file_name, file_data_len):
     with open (file_name, "wb") as f:
         f.write(data)
 
+def send_data(client_soc, data_len, data):
+    """
+    sends data to the client
+    :param client_soc: socket
+    :param data_len: int
+    :param data: str
+    :return: no return
+    """
+    client_soc.send(str(len(data)).zfill(data_len).encode())
+    client_soc.send(data)
+
+def recv_data(client_soc, data_len):
+    """
+    receives data to the client
+    :param client_soc: socket
+    :param data_len: int
+    :param data: str
+    :return: no return
+    """
+    data_len = my_sock.recv(2).decode()
+    data = my_sock.recv(int(data_len)).decode()
+    print(f"server sent - {data}")
+    return data, data_len
+
 def screenshot(my_sock, msg):
+    """
+    receives a screenshot from the server
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     # trying to receive the image
-    file_name_len = int(my_sock.recv(2).decode())
-    file_name = my_sock.recv(file_name_len).decode()
+
+    file_name, file_name_len = recv_data(my_sock, 2)
     file_data_len = int(my_sock.recv(6).decode())
     recv_image_data(my_sock, file_name, file_data_len)
     print("Image Transferred successfully")
@@ -38,70 +68,79 @@ def screenshot(my_sock, msg):
     im.show()
 
 def copy(my_sock, msg):
+    """
+     sends to the server str to copy to the server clipboard
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     text = input("Enter Text to Copy:")
-    str_len = str(len(text)).zfill(2)
-    my_sock.send(str_len.encode())
-    my_sock.send(text.encode())
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
+    send_data(my_sock, 2, text.encode())
+    recv_data(my_sock, 2)
 
 def paste(my_sock, msg):
+    """
+    gets the clipboard from the server
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
+    recv_data(my_sock, 2)
 
 def open_program(my_sock, msg):
+    """
+    sends a program name to the server
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     prog = input("enter a program the sever needs to open:")
-    prog_len = str(len(prog)).zfill(1)
-    my_sock.send(prog_len.encode())
-    my_sock.send(prog.encode())
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
+    send_data(my_sock, 1, prog.encode())
+    recv_data(my_sock,2)
 
 def show_folder(my_sock, msg):
+    """
+    sends a path to the server and receives the folder's data
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     folder_path = input("Enter folder path:")
-    folder_path_len = str(len(folder_path)).zfill(2)
-    my_sock.send(folder_path_len.encode())
-    my_sock.send(folder_path.encode())
+    send_data(my_sock,2, folder_path.encode())
 
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
+    recv_data(my_sock, 2)
 
 def delete(my_sock, msg):
+    """
+    sends a path to the server and receives 1 or 0 if the file was deleted
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     file_path = input("Enter file path:")
     file_path_len = str(len(file_path)).zfill(2)
-    my_sock.send(file_path_len.encode())
-    my_sock.send(file_path.encode())
-
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
+    send_data(my_sock,2,file_path.encode())
+    recv_data(my_sock, 2)
 
 def copy_file(my_sock, msg):
+    """
+    sends a path to the server and receives 1 or 0 if it duplicated it or not
+    :param my_sock: socket
+    :param msg: str
+    :return: none
+    """
     my_sock.send(msg.encode())
     copy_path = input("Enter file path to copy:")
-    copy_path_len = str(len(copy_path)).zfill(2)
-    my_sock.send(copy_path_len.encode())
-    my_sock.send(copy_path.encode())
-
+    send_data(my_sock, 2, copy_path.encode())
     paste_path = input("Enter file path to paste:")
-    paste_path_len = str(len(copy_path)).zfill(2)
-    my_sock.send(paste_path_len.encode())
-    my_sock.send(paste_path.encode())
+    send_data(my_sock, 2, paste_path.encode())
 
-    reqLen = my_sock.recv(2).decode()
-    data = my_sock.recv(int(reqLen)).decode()
-    print(f"server sent - {data}")
-
-
+    recv_data(my_sock, 2)
 # Git repo: https://github.com/Roytman12/advanced-server
 
 my_sock = socket.socket()

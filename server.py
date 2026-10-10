@@ -5,25 +5,42 @@ import pyperclip
 import subprocess
 import os
 
+def send_data(client_soc, data_len, data):
+    """
+    sends data to the client
+    :param client_soc: socket
+    :param data_len: int
+    :param data: str
+    :return: no return
+    """
+    client_soc.send(str(len(data)).zfill(data_len).encode())
+    client_soc.send(data)
+
 def screenshot(client_soc):
+        """
+        takes a screenshot and sending it to the client
+        :param client_soc: socket
+        :return: sends screenshot to the client
+        """
         im = ImageGrab.grab()
         im.save(r'screen.jpg')
         # open and read the file as binary data
         with open("screen.jpg", "rb") as f:
             file_data = f.read()
-        file_data_len = str(len(file_data)).zfill(6)
         file_name = "screen.jpg"
-        file_name_len = str(len(file_name)).zfill(2)
 
         try:
-            client_soc.send(file_name_len.encode())
-            client_soc.send(file_name.encode())
-            client_soc.send(file_data_len.encode())
-            client_soc.send(file_data)
+            send_data(client_soc,2, file_name.encode())
+            send_data(client_soc, 6, file_data)
             print("the image file successfully send to the client")
         except Exception as e:
             print(f"{str(e)} - problem send / receive data - try again later")
 def copy(client_soc):
+        """
+        receives a text from the client and copies it to the clipboard
+        :param client_soc: socket
+        :return: 0 if succeeded or 1 if failed
+        """
         # receive text to copy from the client
         text_len = client_soc.recv(2).decode()
         text_len = int(text_len)
@@ -32,45 +49,54 @@ def copy(client_soc):
 
         pasted = pyperclip.paste()
         if pasted == text_copy:
-            response = str(0)
+            response = "0"
         else:
-            response = str(1)
+            response = "1"
 
-        response_len = str(len(response)).zfill(2)
-
-        client_soc.send(response_len.encode())
-        client_soc.send(response.encode())
+        send_data(client_soc, 2, response.encode())
 def paste(client_soc):
+        """
+        Pastes the text from the clipboard and sending it the client
+        :param client_soc: socket
+        :return: 0 if succeeded or 1 if failed
+        """
         response = pyperclip.paste()
-        response_len = str(len(response)).zfill(2)
-
-        client_soc.send(response_len.encode())
-        client_soc.send(response.encode())
+        send_data(client_soc,2, response.encode())
 def open_program(client_soc):
+        """
+        receives a program from the client and opens it
+        :param client_soc: socket
+        :return: 0 if succeeded or 1 if failed
+        """
         prog_len = client_soc.recv(1).decode()
         prog_len = int(prog_len)
         prog_name = client_soc.recv(prog_len).decode()
         try:
             subprocess.Popen(prog_name)
-            response = str(0)
+            response = "0"
         except Exception:
-            response = str(1)
+            response = "1"
 
-        response_len = str(len(response)).zfill(2)
-        client_soc.send(response_len.encode())
-        client_soc.send(response.encode())
+        send_data(client_soc, 2, response.encode())
 def show_folder(client_soc):
+        """
+        receives a path from the client and sending the folder data to the client
+        :param client_soc: socket
+        :return: 0 if succeeded or 1 if failed
+        """
         folder_path_len = int(client_soc.recv(2).decode())
         folder_path = client_soc.recv(folder_path_len).decode()
         if not os.path.isdir(folder_path):
             print("folder doesn't exist - try again")
             return 1
         data = str(os.listdir(folder_path))
-        data_len = str(len(data)).zfill(2)
-        client_soc.send(data_len.encode())
-        client_soc.send(data.encode())
-
+        send_data(client_soc, 2, data.encode())
 def delete(client_soc):
+        """
+        gets a path from the client and deletes the file in that path
+        :param client_soc: socket
+        :return: 0 if succeeded, 1 if failed
+        """
         file_path_len = int(client_soc.recv(2).decode())
         file_path = client_soc.recv(file_path_len).decode()
         try:
@@ -79,57 +105,49 @@ def delete(client_soc):
         except Exception:
             response = "1"
 
-        response_len = str(len(response)).zfill(2)
-        client_soc.send(response_len.encode())
-        client_soc.send(response.encode())
+        send_data(client_soc,2,response.encode())
 def copy_file(client_soc):
+        """
+        gets a path from the client and copies it into a new path
+        :param client_soc: socket
+        :return: 0 if succeeded, 1 if failed
+        """
         copy_path_len = int(client_soc.recv(2).decode())
         copy_path = client_soc.recv(copy_path_len).decode()
         paste_path_len = int(client_soc.recv(2).decode())
         paste_path = client_soc.recv(paste_path_len).decode()
         try:
             shutil.copy(copy_path, paste_path)
-            response = str(0)
+            response = "0"
         except Exception:
-            response = str(1)
-        response_len = str(len(data)).zfill(2)
-        client_soc.send(response_len.encode())
-        client_soc.send(response.encode())
+            response = "1"
+        send_data(client_soc,2, response.encode())
 
 # create the server
 server_soc = socket.socket()
 server_soc.bind(("0.0.0.0", 1450))
 server_soc.listen(3)
-
 while True:
     # server waits to clients
     client_soc, addr = server_soc.accept()
     print(f"{addr[0]} - connected")
-
-    # handles the client
     while True:
         try:
-            data = client_soc.recv(12).decode()
+            data = client_soc.recv(2).decode()
             if data == "":
                 break
             elif data == "1":
                 screenshot(client_soc)
-                print("the image file successfully send to the client")
-
             elif data == "2":
                 copy(client_soc)
-                print("Success copying text")
             elif data == "3":
                 paste(client_soc)
-                print("Pasted Successfully")
             elif data == "4":
                 open_program(client_soc)
             elif data == "5":
                 returnVal = show_folder(client_soc)
                 if returnVal == 1:
-                    print("Path doesn't exist - try again")
                     continue
-                print("Success")
             elif data == "6":
                 delete(client_soc)
             elif data == "7":
