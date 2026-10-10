@@ -13,11 +13,8 @@ def send_data(client_soc, data_len, data):
     :param data: str
     :return: no return
     """
-    try:
-        client_soc.send(str(len(data)).zfill(data_len).encode())
-        client_soc.send(data)
-    except Exception as e:
-        print(f"error in sending data {str(e)}")
+    client_soc.send(str(len(data)).zfill(data_len).encode())
+    client_soc.send(data)
 
 def screenshot(client_soc):
         """
@@ -32,12 +29,10 @@ def screenshot(client_soc):
             file_data = f.read()
         file_name = "screen.jpg"
 
-        try:
-            send_data(client_soc,2, file_name.encode())
-            send_data(client_soc, 6, file_data)
-            print("the image file successfully send to the client")
-        except Exception as e:
-            print(f"{str(e)} - problem send / receive data - try again later")
+        send_data(client_soc,2, file_name.encode())
+        send_data(client_soc, 6, file_data)
+        print("the image file successfully send to the client")
+
 def copy(client_soc):
         """
         receives a text from the client and copies it to the clipboard
@@ -135,26 +130,30 @@ while True:
     client_soc, addr = server_soc.accept()
     print(f"{addr[0]} - connected")
     while True:
-        data = client_soc.recv(2).decode()
-        if data == "":
-            break
-        elif data == "1":
-            screenshot(client_soc)
-        elif data == "2":
-            copy(client_soc)
-        elif data == "3":
-            paste(client_soc)
-        elif data == "4":
-            open_program(client_soc)
-        elif data == "5":
-            returnVal = show_folder(client_soc)
-            if returnVal == 1:
-                continue
-        elif data == "6":
-            delete(client_soc)
-        elif data == "7":
-            copy_file(client_soc)
-        else:
+        try:
+            data = client_soc.recv(2).decode()
+            if data == "":
+                break
+            elif data == "1":
+                screenshot(client_soc)
+            elif data == "2":
+                copy(client_soc)
+            elif data == "3":
+                paste(client_soc)
+            elif data == "4":
+                open_program(client_soc)
+            elif data == "5":
+                returnVal = show_folder(client_soc)
+                if returnVal == 1:
+                    continue
+            elif data == "6":
+                delete(client_soc)
+            elif data == "7":
+                copy_file(client_soc)
+            else:
+                break
+        except Exception as e:
+            print(f"Error in recv/sending data {str(e)}")
             break
     print(f"{addr[0]} - disconnected")
     client_soc.close()
