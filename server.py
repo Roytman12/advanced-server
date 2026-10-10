@@ -13,8 +13,11 @@ def send_data(client_soc, data_len, data):
     :param data: str
     :return: no return
     """
-    client_soc.send(str(len(data)).zfill(data_len).encode())
-    client_soc.send(data)
+    try:
+        client_soc.send(str(len(data)).zfill(data_len).encode())
+        client_soc.send(data)
+    except Exception as e:
+        print(f"error in sending data {str(e)}")
 
 def screenshot(client_soc):
         """
@@ -132,30 +135,26 @@ while True:
     client_soc, addr = server_soc.accept()
     print(f"{addr[0]} - connected")
     while True:
-        try:
-            data = client_soc.recv(2).decode()
-            if data == "":
-                break
-            elif data == "1":
-                screenshot(client_soc)
-            elif data == "2":
-                copy(client_soc)
-            elif data == "3":
-                paste(client_soc)
-            elif data == "4":
-                open_program(client_soc)
-            elif data == "5":
-                returnVal = show_folder(client_soc)
-                if returnVal == 1:
-                    continue
-            elif data == "6":
-                delete(client_soc)
-            elif data == "7":
-                copy_file(client_soc)
-            else:
-                break
-        except Exception as e:
-            print(f"error in recv/send {str(e)}")
+        data = client_soc.recv(2).decode()
+        if data == "":
+            break
+        elif data == "1":
+            screenshot(client_soc)
+        elif data == "2":
+            copy(client_soc)
+        elif data == "3":
+            paste(client_soc)
+        elif data == "4":
+            open_program(client_soc)
+        elif data == "5":
+            returnVal = show_folder(client_soc)
+            if returnVal == 1:
+                continue
+        elif data == "6":
+            delete(client_soc)
+        elif data == "7":
+            copy_file(client_soc)
+        else:
             break
     print(f"{addr[0]} - disconnected")
     client_soc.close()

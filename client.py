@@ -32,8 +32,11 @@ def send_data(client_soc, data_len, data):
     :param data: str
     :return: no return
     """
-    client_soc.send(str(len(data)).zfill(data_len).encode())
-    client_soc.send(data)
+    try:
+        client_soc.send(str(len(data)).zfill(data_len).encode())
+        client_soc.send(data)
+    except Exception as e:
+        print(f"error in sending data {str(e)}")
 
 def recv_data(client_soc, data_len):
     """
@@ -43,8 +46,11 @@ def recv_data(client_soc, data_len):
     :param data: str
     :return: no return
     """
-    data_len = my_sock.recv(2).decode()
-    data = my_sock.recv(int(data_len)).decode()
+    try:
+        data_len = my_sock.recv(2).decode()
+        data = my_sock.recv(int(data_len)).decode()
+    except Exception as e:
+        print(f"error in sending data {str(e)}")
     print(f"server sent - {data}")
     return data, data_len
 
@@ -164,24 +170,22 @@ while True:
 8 = exit""")
     if msg.lower() == "8":
         break
-    try:
-        if msg == "1":
-                screenshot(my_sock, msg)
-        elif msg == "2":
-                copy(my_sock, msg)
-        elif msg == "3":
-                paste(my_sock, msg)
-        elif msg == "4":
-                open_program(my_sock, msg)
-        elif msg == "5":
-                show_folder(my_sock, msg)
-        elif msg == "6":
-                delete(my_sock, msg)
-        elif msg == "7":
-                copy_file(my_sock, msg)
-        else:
-            break
-    except Exception as e:
-        print(f"error: {str(e)}")
+    if msg == "1":
+         screenshot(my_sock, msg)
+    elif msg == "2":
+        copy(my_sock, msg)
+    elif msg == "3":
+        paste(my_sock, msg)
+    elif msg == "4":
+        open_program(my_sock, msg)
+    elif msg == "5":
+        show_folder(my_sock, msg)
+    elif msg == "6":
+        delete(my_sock, msg)
+    elif msg == "7":
+        copy_file(my_sock, msg)
+    else:
+        break
+
 my_sock.close()
 print("Bye Bye")
